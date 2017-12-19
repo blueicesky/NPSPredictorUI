@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="UTF-8">
+    <title>CIBC - NPS Prediction</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="../static/css/style2.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <img class="logoSub" src="../static/CIBC_DataStudioLogo.png">
+    <form action='/' method='post' class="search-container">
+        <input type="text" id="search-bar" name='cifSearch' placeholder="Search CIF Number Here">
+        <button class="search-icon" id="button" type="submit"><img class="resize" src="../static/search.png"></button>
+    </form>
+    <div id='cifDisplay' class='text2'>hhhhhhhhh</div>
+    <div id="overlayDiv">
+        <div class="loading"></div>
+    </div>
+    <div class="chart-gauge" id="disappear1"></div>
+    <table id="disappear2" class="rwd-table">
+      <tr>
+        <th>Most Influencial NPS Drivers</th>
+        <th>Recommended Improvements</th>
+      </tr>
+      <tr>
+        <td data-th="Movie Title">23% Savings Account</td>
+        <td data-th="Genre">Provide higher interest</td>
+      </tr>
+      <tr>
+        <td data-th="Movie Title">20% Customer Inquiries</td>
+        <td data-th="Genre">Have this customer put on high priority</td>
+      </tr>
+      <tr>
+        <td data-th="Movie Title"> 13% Age</td>
+        <td data-th="Genre">Fixed Factor</td>
+      </tr>
+    </table>
+    <div class="freetext" id="promoter">Promoter</div>
+    
+    <div class="container" id="disappear3">
+		<div class="left">
+			<div class="info-box">
+				<div class="entry">
+					<i class="icon-wallet" aria-hidden="true"></i>
+					<p>Customer City:<br><span id="customer_city"></span></p>
+				</div>
+				<div class="entry">
+					<i class="icon-calendar" aria-hidden="true"></i>
+					<p>Customer Age:<br><span id="age"></span></p>
+				</div>
+				<div class="entry">
+					<i class="icon-star" aria-hidden="true"></i>
+					<p>Client Type:<br><span id="client_type"></span></p>
+				</div>
+				<div class="entry">
+					<i class="icon-notebook" aria-hidden="true"></i>
+					<p>Customer Category ID:<br><span id="cate_id"></span></p>
+				</div>
+			</div>
+		</div>
+		<div class="right">
+			<div class="content">
+				<div class="header">
+					<img src="https://www.cibconline.cibc.com/ebm-resources/public/appt-booking/client/assets/img/cibc/cibc_logo.png">
+				</div>
+				<div class="main">
+					<h3>Customer Information</h3>
+					<h5 id="cif_for_info">F3E2A6390D273A13B61A925335A7490B</h5>
+				</div>
+				<div class="message">
+					<p>First Service Date:<br><span id="first_service">30MAR2015:00:00:00</span></p>
+				</div>
+			</div>
+		</div>
+	</div>
+    
+    <table id="disappearTable" class="fixed_headers">
+      <thead>
+        <tr>
+          <th>Feature Name</th>
+          <th>Feature Value</th>
+          <th>Feature Description</th>
+        </tr>
+      </thead>
+      <tbody id="bodyTable">
+      </tbody>
+    </table>
+        
+    <script>
+        /*
+        This function will set up the info box as well as the display table populated with features and their values.
+        
+        Feature descriptions needs to be added! Right now only placeholders are put in.
+        
+        Add feature descriptions from the JSON structure at the place marked by *******Marked*******
+        */
+        $(function(){
+            var myVar = '{{ jsondict|tojson|safe }}';
+            document.getElementById("cif_for_info").innerHTML = '{{ cifNumber }}';
+            //var jsonStruct = JSON.parse(JSON.stringify(myVar));
+            var jsonStruct = $.parseJSON(myVar);
+            var id_submit = false;
+            console.log(jsonStruct);
+            for (var key in jsonStruct){
+                if(jsonStruct.hasOwnProperty(key)){
+                    console.log(key);
+                    if(key != "_id"){
+                        for (var subkey in jsonStruct[key]){
+                            if(jsonStruct[key].hasOwnProperty(subkey)){
+                                //293A0708F90AED21EF0CA0101C438F73
+                                if(subkey == "PERS_AGE"){
+                                    document.getElementById("age").innerHTML = jsonStruct[key][subkey];
+                                }else if(subkey == "PERS_CITY_TOWN"){
+                                    document.getElementById("customer_city").innerHTML = jsonStruct[key][subkey];
+                                }else if(subkey == "CUST_CATEGORY_ID"){
+                                    document.getElementById("cate_id").innerHTML = jsonStruct[key][subkey];
+                                }else if(subkey == "FIRST_SERVICE_DATE"){
+                                    document.getElementById("first_service").innerHTML = jsonStruct[key][subkey];
+                                }else if(subkey == "client_type"){
+                                    document.getElementById("client_type").innerHTML = jsonStruct[key][subkey];
+                                }
+                                //*******Marked*******
+                                document.getElementById("bodyTable").innerHTML += "<tr><td>" + subkey + "</td><td>" + jsonStruct[key][subkey] + "</td><td>-</td></tr>";
+                            }
+                        }
+                    }else{
+                        if(!id_submit){
+                            //*******Marked*******
+                            document.getElementById("bodyTable").innerHTML += "<tr><td>" + key + "</td><td>" + jsonStruct[key] + "</td><td>This is the CIF of the user</td></tr>";
+                            id_submit = true;
+                        }
+                    }
+                }
+            }
+        });
+        /*
+        This function will take care of hiding the elements before any CIF is entered. You may add more elements to the structure.
+        */
+        $(function(){
+            var cifNumber = '{{ cifNumber }}';
+            var show_rez = '{{ no_results }}';
+            console.log(show_rez);
+            if(show_rez == "False"){
+                document.getElementById('cifDisplay').innerHTML = cifNumber;
+                document.getElementById("overlayDiv").style.display = "none";
+                document.getElementById("disappear1").style.display = "block";
+                document.getElementById("disappear2").style.display = "block";
+                document.getElementById("promoter").style.display = "block";
+                document.getElementById("disappear3").style.display = "block";
+                document.getElementById("disappearTable").style.visibility = "visible";
+            }else{
+                console.log("Executed True");
+                document.getElementById('cifDisplay').innerHTML = cifNumber;
+                document.getElementById("overlayDiv").style.display = "block";
+                document.getElementById("disappear1").style.display = "none";
+                document.getElementById("disappear2").style.display = "none";
+                document.getElementById("promoter").style.display = "none";
+                document.getElementById("disappear3").style.display = "none";
+                document.getElementById("disappearTable").style.visibility = "hidden";
+            }
+        });
+        /*
+        
+        */
+        $(function() {
+            var perc2 = '{{ npsScore }}';
+            var Needle, arc, arcEndRad, arcStartRad, barWidth, chart, chartInset, degToRad, el, endPadRad, height, i, margin, needle, numSections, padRad, percToDeg, percToRad, percent, radius, ref, sectionIndx, sectionPerc, startPadRad, svg, totalPercent, width;
+
+            document.getElementById("promoter").innerHTML = "NPS Score: " + perc2;
+            percent = perc2 / 10;
+            
+            barWidth = 20;
+
+            numSections = 10;
+
+            sectionPerc = 1 / numSections / 2;
+
+            padRad = 0.05;
+
+            chartInset = 10;
+
+            totalPercent = .75;
+
+            el = d3.select('.chart-gauge');
+
+            margin = {
+                top: 20,
+                right: 20,
+                bottom: 0,
+                left: 20
+            };
+
+          width = el[0][0].offsetWidth - margin.left - margin.right;
+
+          height = width;
+
+          radius = Math.min(width, height) / 2;
+
+          percToDeg = function(perc) {
+            return perc * 360;
+          };
+
+          percToRad = function(perc) {
+            return degToRad(percToDeg(perc));
+          };
+
+          degToRad = function(deg) {
+            return deg * Math.PI / 180;
+          };
+
+          svg = el.append('svg').attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
+
+          chart = svg.append('g').attr('transform', "translate(" + ((width + margin.left) / 2) + ", " + ((height + margin.top) / 2) + ")");
+
+          for (sectionIndx = i = 1, ref = numSections; 1 <= ref ? i <= ref : i >= ref; sectionIndx = 1 <= ref ? ++i : --i) {
+            arcStartRad = percToRad(totalPercent);
+            arcEndRad = arcStartRad + percToRad(sectionPerc);
+            totalPercent += sectionPerc;
+            startPadRad = sectionIndx === 0 ? 0 : padRad / 2;
+            endPadRad = sectionIndx === numSections ? 0 : padRad / 2;
+            arc = d3.svg.arc().outerRadius(radius - chartInset).innerRadius(radius - chartInset - barWidth).startAngle(arcStartRad + startPadRad).endAngle(arcEndRad - endPadRad);
+            chart.append('path').attr('class', "arc chart-color" + sectionIndx).attr('d', arc);
+          }
+
+          Needle = (function() {
+            function Needle(len, radius1) {
+              this.len = len;
+              this.radius = radius1;
+            }
+
+            Needle.prototype.drawOn = function(el, perc) {
+              el.append('circle').attr('class', 'needle-center').attr('cx', 0).attr('cy', 0).attr('r', this.radius);
+              return el.append('path').attr('class', 'needle').attr('d', this.mkCmd(perc));
+            };
+
+            Needle.prototype.animateOn = function(el, perc) {
+              var self;
+              self = this;
+              return el.transition().delay(500).ease('elastic').duration(3000).selectAll('.needle').tween('progress', function() {
+                return function(percentOfPercent) {
+                  var progress;
+                  progress = percentOfPercent * perc;
+                  return d3.select(this).attr('d', self.mkCmd(progress));
+                };
+              });
+            };
+
+            Needle.prototype.mkCmd = function(perc) {
+              var centerX, centerY, leftX, leftY, rightX, rightY, thetaRad, topX, topY;
+              thetaRad = percToRad(perc / 2);
+              centerX = 0;
+              centerY = 0;
+              topX = centerX - this.len * Math.cos(thetaRad);
+              topY = centerY - this.len * Math.sin(thetaRad);
+              leftX = centerX - this.radius * Math.cos(thetaRad - Math.PI / 2);
+              leftY = centerY - this.radius * Math.sin(thetaRad - Math.PI / 2);
+              rightX = centerX - this.radius * Math.cos(thetaRad + Math.PI / 2);
+              rightY = centerY - this.radius * Math.sin(thetaRad + Math.PI / 2);
+              return "M " + leftX + " " + leftY + " L " + topX + " " + topY + " L " + rightX + " " + rightY;
+            };
+
+            return Needle;
+
+          })();
+
+          needle = new Needle(90, 15);
+
+          needle.drawOn(chart, 0);
+
+          needle.animateOn(chart, percent);
+
+        });
+        
+    </script>
+    
+  <script src='http://cdnjs.cloudflare.com/ajax/libs/d3/3.3.3/d3.min.js'></script>
+
+</body>
+</html>
